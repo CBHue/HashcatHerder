@@ -1,4 +1,6 @@
 # HashcatHerder
+This is a set it an forget it hashcat wrapper written in python3. 
+it loops over a set of wordlists untill it cracks all the passwords or runs out of cycles thru all the wordlists. 
 
 usage: HashcatHerder.py [-h] [-f Hash FILE] [-m MODE] [-p potfile] [-r]
                         [--dbcheck HASH] [--rulesOnly] [--rulesPlus]
@@ -24,8 +26,14 @@ optional arguments:
   
   --rulesPlus           Extended Rules then Brute
 
+# Straight Mode - Just loop thru all the wordlists
 sudo python3 HashcatHerder.py -m 100 -f /passwords/hash2.txt
 
+# Rules Mode + Straight Mode - Loop thru a quick set of Rules then all the Wordlists.
+sudo python3 HashcatHerder.py -m 100 -f /passwords/hash2.txt --rules
+
+# Rules Only Mode - Just loop thru all the wordlists and Rules in the rule directory.
 sudo python3 HashcatHerder.py -m 100 -f /passwords/hash2.txt --rulesOnly
 
+# All Rules + Straight Mode - Loop thru all the Rules then run straight mode on all wordlists
 sudo python3 HashcatHerder.py -m 100 -f /passwords/hash2.txt --rulesPlus
