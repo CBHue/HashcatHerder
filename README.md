@@ -1,6 +1,6 @@
 # HashcatHerder
 This is a set it an forget it hashcat wrapper written in python3. 
-it loops over a set of wordlists untill it cracks all the passwords or runs out of cycles thru all the wordlists. 
+it loops over a set of wordlists untill it cracks all the passwords or cycles thru all the wordlists. 
 
 usage: HashcatHerder.py [-h] [-f Hash FILE] [-m MODE] [-p potfile] [-r]
                         [--dbcheck HASH] [--rulesOnly] [--rulesPlus]
