@@ -215,9 +215,7 @@ def checkPot():
 #
 def main():
 
-	startTime = dbWork.start()
 	c = dbWork.db_connect(DBFILE)
-
 	#dbWork.db_getHashCount(c)
 	printY("Start File  : " + hFile)
 	initialSize = curentLines(hFile)
@@ -356,5 +354,8 @@ if __name__ == "__main__":
 	if args.pFile is not None:
 		pFile = args.pFile
 		printY(pFile)
+
+	# Set the Global timekeeper
+	startTime = dbWork.start()
 
 	main()
