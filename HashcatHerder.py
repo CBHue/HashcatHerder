@@ -40,7 +40,7 @@ MainDir		= config.DIR_CONFIG['MainDir']
 pListDir	= config.DIR_CONFIG['pListDir']
 potDir		= config.DIR_CONFIG['potDir']
 rDir 		= config.DIR_CONFIG['rDir']
-RuleOnlyDir = config.DIR_CONFIG['RuleOnlyDir']
+RuleOnlyDir	= config.DIR_CONFIG['RuleOnlyDir']
 dataDIR 	= config.DIR_CONFIG['dataDIR']
 DBFILE 		= config.DIR_CONFIG['DBFILE']
 
@@ -81,6 +81,7 @@ def hashCAT(hType, hFile, pFile, rFile):
 		rList = result.split('\n')
 		totalRules = len(rList)
 		counter = 1
+		iSize = curentLines(hFile)
 		for r in rList:
 			rules = Dir + r
 			printY('Rule file   : %s %s out of %s' % (r, counter, totalRules))
@@ -89,6 +90,14 @@ def hashCAT(hType, hFile, pFile, rFile):
 			print(cmd)
 			realTimeMuxER(cmd)
 			counter += 1
+
+			# lets check to see if were done
+			nSize = curentLines(hFile)
+			iSize = crackCheck(iSize, nSize)
+
+			if nSize == "0":
+				printR("No more work to do")
+				break
 	else:
 		cmd = "%s --remove -O --potfile-path %s -o %s -a 0 -m %s %s %s" % (hashcat, potFile, oFile, hType, hFile, pFile)
 		print(cmd)
@@ -99,13 +108,15 @@ def loggER(message):
 	muxER(cmd)
 
 def crackCheck(iSize,nSize):
+	global startTime
+	dbWork.endT(startTime)
 	printY("Starting hash file size: " + locale.format("%d", int(iSize), grouping=True))
 	printY("Current hash file size : " + '\033[1m' + locale.format("%d", int(nSize), grouping=True))
 
 	if int(nSize) < int(iSize):
 		cracked = int( float(iSize)-float(nSize) )
-		printR("Cracked " + locale.format("%d", int(cracked), grouping=True) + " hash(es) out of " + locale.format("%d", int(iSize), grouping=True))
-		printR('')
+		printG("Cracked " + locale.format("%d", int(cracked), grouping=True) + " hash(es) out of " + locale.format("%d", int(iSize), grouping=True))
+		print('')
 		
 		loggER(locale.format("%d", int(cracked), grouping=True) + " hash(es) cracked out of "+ locale.format("%d", int(iSize), grouping=True))
 		loggER("")
@@ -133,7 +144,7 @@ def loopList(Dir,iSize,rFile):
 			loggER(pFile)
 			loggER("-------------------------------")
 
-			printG('Wordlist    : %s %s out of %s' % (f, counter, totalWordLists))
+			printY('Wordlist    : %s %s out of %s' % (f, counter, totalWordLists))
 			hashCAT(hType,wFile,pFile,rFile)
 			counter += 1
 		
@@ -292,23 +303,38 @@ if __name__ == "__main__":
 	parser.add_argument("-f", "--hfile", dest="hFile",	help="File containing hashes", metavar="Hash FILE")
 	parser.add_argument("-m", "--mode",  dest="hType",	help="Hash Type (Hashcat Mode ex:--mode=500)", metavar="MODE")
 	parser.add_argument("-p", "--pFile", dest="pFile",	help="Alternate potfile", metavar="potfile")
-	parser.add_argument("-r", "--rules", help="Run rules first, then Brute", action="store_true")
+	parser.add_argument("-r", "--rules", help="Wordlist + Rules", action="store_true")
 	parser.add_argument("--dbcheck",	 dest="hash",		help="Check DB for hash ex: --dbcheck '5f4dcc3b5aa765d61d8327deb882cf99'")
-	parser.add_argument("--rulesOnly",	 dest="rulesOnly",	help="Dont Brute, Only use rules", action="store_true")
-	parser.add_argument("--rulesPlus",	 dest="rulesPlus",	help="Extended Rules then Brute", action="store_true")
+	parser.add_argument("--rulesOnly",	 dest="rulesOnly",	help="Rules only", action="store_true")
+	parser.add_argument("--rulesPlus",	 dest="rulesPlus",	help="Extended Wordlist + Rules", action="store_true")
 
 	args = parser.parse_args()
 
 	# if you only want to check for a hash do it now
 	if args.hash:
 		c = dbWork.db_connect(DBFILE)
+
+		if os.path.isfile(args.hash):
+			hFile = args.hash
+			# create a unique identifier date + master
+			ts = time.strftime("%m%d%Y_%H_%M_%S", time.gmtime())
+			wFile 	= workingDir + os.path.basename(hFile) + "_" + ts
+			oFile 	= workingDir + os.path.basename(hFile) + "_" + ts + ".log"
+			dbWork.db_checkFile(c, args.hash, wFile, oFile)
+			wCount = curentLines(wFile)
+			oCount = curentLines(oFile)
+			printG("Cracked 	: " + oCount + " " + oFile)
+			printR("Not Cracked : " + wCount + " " + wFile)
+			exit()
+		
+		printR("Assuming its a single hash")	
 		printP("Checking for : " + args.hash)
 		r = dbWork.db_search(c, args.hash)
 		if type(r) is str:
 			printR("Hash not cracked yet\n")
 			# Hash is already cracked
 		else:
-			password = args.hash + ":" + ', ,'.join([str(i[0]) for i in r]) + "\n"
+			password = ', ,'.join([str(i[0]) for i in r]) + "\n"
 			printG("Hash Cracked : " + str(password))
 		exit()	
 
