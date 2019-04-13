@@ -23,22 +23,23 @@ DIR_CONFIG = {
 
 	# Hashcat Binary location
 	#'hashcat' : '/opt/hashcat-5.0.0/hashcat64.bin',
-	'hashcat' : '/opt/hashcat-5.1.0/hashcat64.bin',
-	#'hashcat' : '/opt/hashcat/hashcat',
+	#'hashcat' : '/opt/hashcat-5.1.0/hashcat64.bin',
+	'hashcat' : '/opt/hashcat/hashcat',
 
 	# John script location
 	'john' : '/opt/JohnTheRipper/run/john',
 
 	# Script Working Directories
-	'workingDir' : '/opt/hashERLoopER/working/log/', 
-	'dataDIR'	 : '/opt/hashERLoopER/working/db/',
-	'DBFILE'	 : '/opt/hashERLoopER/working/db/hashMaster.db',
+	'workingDir' 	: '/opt/HashcatHerder/working/log/', 
+	'dataDIR'	: '/opt/HashcatHerder/working/db/',
+	'DBFILE'	: '/opt/HashcatHerder/working/db/hashMaster.db',
 
 	# Wordlist Directories
-	'MainDir'	 	: '/mnt/NoName/PList/',
-	'pListDir'	 	: '/mnt/NoName/PList/wordlist/',
-	'potDir'	 	: '/mnt/NoName/PList/potfile/',
-	'rDir'	 	 	: '/mnt/NoName/PList/rules/',
-	'RuleOnlyDir'	: '/mnt/NoName/PList/rules/ALL/'
-
+	'MainDir'	: '/mnt/NoName/PList/',
+	'wordlistDir'	: '/mnt/NoName/PList/wordlist/',
+	'potDir'	: '/mnt/NoName/PList/potfile/',
+	'rulesDir'	: '/mnt/NoName/PList/rules/',
+	'RuleOnlyDir'	: '/mnt/NoName/PList/rules/ALL/',
+	'hcMaskDir'	: '/mnt/NoName/PList/masks/',
+	'hybridDir'	: '/mnt/NoName/PList/hybrid/',
 }
