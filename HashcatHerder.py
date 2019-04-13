@@ -31,15 +31,18 @@ locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
 # Custom Modules
 import dbWork
 import config
+import banner
 
 # Configurations #
 hashcat 	= config.DIR_CONFIG['hashcat']
 john 		= config.DIR_CONFIG['john']
 workingDir	= config.DIR_CONFIG['workingDir'] 
 MainDir		= config.DIR_CONFIG['MainDir']
-pListDir	= config.DIR_CONFIG['pListDir']
+wordlistDir	= config.DIR_CONFIG['wordlistDir']
 potDir		= config.DIR_CONFIG['potDir']
-rDir 		= config.DIR_CONFIG['rDir']
+rulesDir 	= config.DIR_CONFIG['rulesDir']
+hcMaskDir 	= config.DIR_CONFIG['hcMaskDir']
+hybridDir 	= config.DIR_CONFIG['hybridDir']
 RuleOnlyDir	= config.DIR_CONFIG['RuleOnlyDir']
 dataDIR 	= config.DIR_CONFIG['dataDIR']
 DBFILE 		= config.DIR_CONFIG['DBFILE']
@@ -69,25 +72,33 @@ def john():
 	cmd = "sudo" + john + " " + hFile + " --wordlist=" + pFile
 	cmd = "sudo /opt/JohnTheRipper/run/john ./SunMD5_unshadowed.txt --wordlist=/mnt/NoName/PList/10k-most-common.txt"
 
-def hashCAT(hType, hFile, pFile, rFile):
-	if rFile is not None:
-		# Lets gather the rules from the rule dir then loop them
-		if args.rulesOnly or args.rulesPlus:
+def hashCAT(hType, hFile, wordList, option):
+	'''
+	hType 		: Hash Type
+	hFile 		: Hash File
+	wordList 	: wordList 
+	option 		: "Rules, Rules+, Mask, WordList"
+
+	'''
+	iSize = curentLines(hFile)
+	if "Rules" in option:
+		# Lets gather the rules from the rule dir then loop them*
+		if option == "Rules+":
 			Dir = RuleOnlyDir
 		else:
-			Dir = rDir
+			Dir = rulesDir
 		cmd = "ls " + "-Sr " + Dir + " | grep \".rule\""
 		result = muxER(cmd)
 		rList = result.split('\n')
 		totalRules = len(rList)
 		counter = 1
-		iSize = curentLines(hFile)
 		for r in rList:
 			rules = Dir + r
 			printY('Rule file   : %s %s out of %s' % (r, counter, totalRules))
-			printY('Wordlist    : %s ' % (pFile))
-			cmd = "%s --rules %s --remove --potfile-path %s -o %s -a 0 -m %s %s %s" % (hashcat,rules,potFile,oFile,hType,hFile,pFile)
-			print(cmd)
+			printY('Wordlist    : %s ' % (wordList))
+			print('')
+			cmd = "%s --rules %s --remove --potfile-path %s -o %s -a 0 -m %s %s %s" % (hashcat,rules,potFile,oFile,hType,hFile,wordList)
+			#print(cmd)
 			realTimeMuxER(cmd)
 			counter += 1
 
@@ -98,10 +109,76 @@ def hashCAT(hType, hFile, pFile, rFile):
 			if nSize == "0":
 				printR("No more work to do")
 				break
-	else:
-		cmd = "%s --remove -O --potfile-path %s -o %s -a 0 -m %s %s %s" % (hashcat, potFile, oFile, hType, hFile, pFile)
-		print(cmd)
+
+	if option == "Mask":
+		Dir = hcMaskDir
+		cmd = "ls " + "-Sr " + Dir + " | grep \".hcmask\""
+		result = muxER(cmd)
+		fList = result.split('\n')
+		total = len(fList)
+		counter = 1
+		for f in fList:
+			file = Dir + f
+			printY('Mask Right  : %s %s out of %s' % (f, counter, total))
+			printY('Wordlist    : %s ' % (wordList))
+
+			cmd = "%s --remove -O --potfile-path %s -o %s -a 6 -m %s %s %s %s" % (hashcat, potFile, oFile, hType, hFile, wordList, file)
+			#print(cmd)
+			realTimeMuxER(cmd)
+
+			printY('Mask Left   : %s %s out of %s' % (f, counter, total))
+			printY('Wordlist    : %s ' % (wordList))
+			print('')
+			cmd = "%s --remove -O --potfile-path %s -o %s -a 7 -m %s %s %s %s" % (hashcat, potFile, oFile, hType, hFile, file, wordList)
+			#print(cmd)
+			realTimeMuxER(cmd)	
+			
+			counter += 1
+
+			# lets check to see if were done
+			nSize = curentLines(hFile)
+			iSize = crackCheck(iSize, nSize)
+
+			if nSize == "0":
+				printR("No more work to do")
+				break
+
+	if option == "Hybrid":
+		hyb = '?a?a?a?a?a?a?a'
+
+		printY('Mask Right  : %s ' % (hyb))
+		printY('Wordlist    : %s ' % (wordList))
+		print('')
+		cmd = "%s --remove --potfile-path %s -o %s -a 6 -m %s %s %s %s -i" % (hashcat, potFile, oFile, hType, hFile, wordList, hyb)
+		#print(cmd)
 		realTimeMuxER(cmd)
+
+		printY('Mask Left   : %s ' % (hyb))
+		printY('Wordlist    : %s ' % (wordList))
+		print('')
+		cmd = "%s --remove -O --potfile-path %s -o %s -a 7 -m %s %s %s %s -i" % (hashcat, potFile, oFile, hType, hFile, hyb, wordList)
+		#print(cmd)
+		realTimeMuxER(cmd)	
+
+	if option == "Brute":
+		brute = '?a?a?a?a?a?a?a'
+		printY('Brute  	: %s ' % (brute))
+		print('')
+		cmd = "%s --remove -O --potfile-path %s -o %s -a 3 --increment -m %s %s %s" % (hashcat, potFile, oFile, hType, hFile, brute)
+		realTimeMuxER(cmd)
+
+	if option == "WordList":
+		cmd = "%s --remove -O --potfile-path %s -o %s -a 0 -m %s %s %s" % (hashcat, potFile, oFile, hType, hFile, wordList)
+		#print(cmd)
+		realTimeMuxER(cmd)
+
+		# lets check to see if were done
+		nSize = curentLines(hFile)
+		iSize = crackCheck(iSize, nSize)
+
+		if nSize == "0":
+			printR("No more work to do")
+			return
 
 def loggER(message):
 	cmd = "echo \"" + message + "\" >> " + oFile 
@@ -127,7 +204,15 @@ def crackCheck(iSize,nSize):
 		print('')
 		return iSize
 
-def loopList(Dir,iSize,rFile):
+def loopList(Dir,iSize,option):
+	'''
+	Dir 	: String: Directory to get wordlist
+	iSize 	: String: initial file size 
+	option 	: Type of test - Rules, Rules+, Wordlist, Mask
+
+	The idea here is pull the text files (Wordlists) from the passed in directory
+	these txt files are the word lists we will use for this hashcat round
+	'''
 	cmd = "ls " + "-Sr " + Dir + " | grep \".txt\""
 	result = muxER(cmd)
 	pList = result.split('\n')
@@ -139,26 +224,20 @@ def loopList(Dir,iSize,rFile):
 	for f in pList:
 		fext = os.path.splitext(f)[1]
 		if fext == '.txt':
-			pFile = Dir + f
+			wordList = Dir + f
 			
-			loggER(pFile)
+			loggER(wordList)
 			loggER("-------------------------------")
 
-			printY('Wordlist    : %s %s out of %s' % (f, counter, totalWordLists))
-			hashCAT(hType,wFile,pFile,rFile)
+			printY('File 	: %s %s out of %s' % (f, counter, totalWordLists))
+			print('')
+			# hash type , Working hash file, working Pot File, Type of test
+			hashCAT(hType,wFile,wordList,option)
 			counter += 1
 		
 		else:
 			counter += 1
 			continue
-
-		# lets check to see if were done
-		nSize = curentLines(wFile)
-		iSize = crackCheck(iSize, nSize)
-
-		if nSize == "0":
-			printR("No more work to do")
-			break
 
 def curentLines(file):
 	# Get starting wc of hFile
@@ -210,9 +289,45 @@ def checkPot():
 	if not os.path.isfile(wFile):
 		cmd = "cp " + hFile + " " + wFile
 		realTimeMuxER(cmd)
-#
-# Main
-#
+
+def workCheck(c,iSize):
+	nSize = curentLines(wFile)
+	if int(nSize) == 0:
+		# No more work to do
+		fin(c,iSize)
+	else:
+		printG("Work to do?	: True")
+
+def fin(c,iSize):
+
+	currentSize = curentLines(wFile)
+	loggER("")
+	loggER("****************************************************")
+	loggER(time.strftime("%m/%d/%Y %H:%M:%S", time.gmtime()) + ": " + locale.format("%d", int(currentSize), grouping=True) + " hash(es) not cracked")
+	loggER("")
+
+	print('')
+	printR("Fin.")
+	printY("Starting Hashes Count           : " + locale.format("%d", int(iSize), grouping=True))
+	printY("Ending Hashes Count             : " + locale.format("%d", int(currentSize), grouping=True))
+	printR("Remaining Hashes are located in : " + wFile)
+	printR("Complete Log File located in    : " + oFile)
+	print('')
+
+	# Copy log file to current hash path
+	hashDir = os.path.dirname(hFile)
+	cmd = "cp " + oFile + " " + hashDir
+	realTimeMuxER(cmd)
+	
+	# add any cracked hashes to the DB
+	if os.path.isfile(potFile):
+		dbWork.db_readFile(c, potFile)
+	
+	dbWork.endT(startTime)
+	dbWork.db_close(c)
+	sys.exit(1)
+
+# Main #
 def main():
 
 	c = dbWork.db_connect(DBFILE)
@@ -240,52 +355,62 @@ def main():
 	loggER("****************************************************")
 	loggER("")
 
-	# If you want Rules do them first ... 
-	if (args.rules):
-		printY("Rules       : " + rDir)
-		loopList(rDir, workingSize, True)
+	'''
+	- [ Attack Modes ] -
+
+	  # | Mode
+	 ===+======
+	  0 | Straight
+	  1 | Combination
+	  3 | Brute-force
+	  6 | Hybrid Wordlist + Mask
+	  7 | Hybrid Mask + Wordlist
+	  '''
+
+	# Quick Rules ... Straight Attack Mode
+	if (args.rules) or (args.rulesPlus) or args.allChecks:
+		workCheck(c,initialSize)
+		printY("Rules       : " + rulesDir)
+		loopList(hybridDir, workingSize, "Rules")
 		dbWork.endT(startTime)
 	
-	if (args.rulesOnly) or (args.rulesPlus):
-		printY("Rules       : " + RuleOnlyDir)
-		loopList(RuleOnlyDir, workingSize, True)
+	# Rules Plus ... Straight Attack Mode
+	if (args.rulesPlus) or args.allChecks:
+		workCheck(c,initialSize)
+		printY("Rules+      : " + RuleOnlyDir)
+		loopList(RuleOnlyDir, workingSize, "Rules+")
 		dbWork.endT(startTime)	
 
-	# Check if we have anything left to do then go to main work
-	nSize = curentLines(wFile)
-	if int(nSize) > 0:
-		# now just loop thru all wordlists until we crack or run out of work	
-		if not args.rulesOnly:
-			loopList(pListDir, workingSize, None)
-			dbWork.endT(startTime)
+	# Wordlist ... Straight Attack Mode 
+	if args.wordOnly or args.allChecks:
+		workCheck(c,initialSize)
+		printY("Wordlist    : " + wordlistDir)
+		loopList(wordlistDir, workingSize, "WordList")
+		dbWork.endT(startTime)
 
-	# Finished with work. Get the final file size and log out details
-	currentSize = curentLines(wFile)
+	# Hybrid Mask + Wordlist / Wordlist + Mask Attack
+	if args.mask or args.allChecks:
+		workCheck(c,initialSize)
+		printY("Hybrid Mask : " + '?a?a?a?a?a?a?a')
+		loopList(hybridDir, workingSize, "Hybrid")
+		dbWork.endT(startTime)
 
-	loggER("")
-	loggER("****************************************************")
-	loggER(time.strftime("%m/%d/%Y %H:%M:%S", time.gmtime()) + ": " + locale.format("%d", int(currentSize), grouping=True) + " hash(es) not cracked")
-	loggER("")
+	# Incrementing hcmask attacks
+	if args.hybridOnly or args.allChecks:
+		workCheck(c,initialSize)
+		printY("Hybrid Mask : " + hybridDir)
+		loopList(hybridDir, workingSize, "Mask")
+		dbWork.endT(startTime)
 
-	print('')
-	printR("Fin.")
-	printY("Starting Hashes Count           : " + locale.format("%d", int(initialSize), grouping=True))
-	printY("Ending Hashes Count             : " + locale.format("%d", int(currentSize), grouping=True))
-	printR("Remaining Hashes are located in : " + wFile)
-	printR("Complete Log File located in    : " + oFile)
-	print('')
+	# If you made it here we ran out of work ... Brute-force Attack
+	if args.brute or args.allChecks:
+		workCheck(c,initialSize)
+		printY("Brute-force : " + '?a?a?a?a?a?a?a')		
+		hashCAT(hType,wFile,False,"Brute")
+		dbWork.endT(startTime)
 
-	# Copy log file to current hash path
-	hashDir = os.path.dirname(hFile)
-	cmd = "cp " + oFile + " " + hashDir
-	realTimeMuxER(cmd)
-	
-	# add any cracked hashes to the DB
-	if os.path.isfile(potFile):
-		dbWork.db_readFile(c, potFile)
-	
-	dbWork.endT(startTime)
-	dbWork.db_close(c)
+	# If we got here we couldnt crack everything and ran out of things to try ....
+	fin(c,initialSize)
 
 if __name__ == "__main__":
 	
@@ -293,18 +418,26 @@ if __name__ == "__main__":
 		sys.stdout.write("This script requires Python 3.x\n")
 		sys.exit(1)
 
+	banner.banner()
+	banner.title()
+
 	# Root Check
 	if os.geteuid() != 0:
 		exit("You need to have root privileges to run this script.\nPlease try again, this time using 'sudo'. Exiting.")
 
 	parser = ArgumentParser()
-	parser.add_argument("-f", "--hfile", dest="hFile",	help="File containing hashes", metavar="Hash FILE")
-	parser.add_argument("-m", "--mode",  dest="hType",	help="Hash Type (Hashcat Mode ex:--mode=500)", metavar="MODE")
-	parser.add_argument("-p", "--pFile", dest="pFile",	help="Alternate potfile", metavar="potfile")
-	parser.add_argument("-r", "--rules", help="Wordlist + Rules", action="store_true")
+	parser.add_argument("--mode",  		 dest="hType",		help="Hashcat Mode", 		metavar="MODE")
+	parser.add_argument("-f", "--hfile", 	 dest="hFile",		help="Hash File", 		metavar="Hash FILE")
+	parser.add_argument("--addOn",	 	 dest="addOn",		help="All Attacks", 		metavar="Add on Hashcat options")
+	parser.add_argument("-p", "--pFile", 	 dest="pFile",		help="Alternate potfile", 	metavar="potfile")
+	parser.add_argument("--mask", 		 dest="mask",		help="Mask Attack ex: '?a?a?a?a?a?a?a'", action="store_true")
+	parser.add_argument("--brute", 		 dest="brute",		help="Brute-force '?a?a?a?a?a?a?a' incrementing", action="store_true")
 	parser.add_argument("--dbcheck",	 dest="hash",		help="Check DB for hash ex: --dbcheck '5f4dcc3b5aa765d61d8327deb882cf99'")
-	parser.add_argument("--rulesOnly",	 dest="rulesOnly",	help="Rules only", action="store_true")
-	parser.add_argument("--rulesPlus",	 dest="rulesPlus",	help="Extended Wordlist + Rules", action="store_true")
+	parser.add_argument("--rules",	 	 dest="rules",		help="Quick Rules only", 	action="store_true")
+	parser.add_argument("--rulesPlus",	 dest="rulesPlus",	help="Extended Rules", 		action="store_true")
+	parser.add_argument("--wordlist",	 dest="wordOnly",	help="Wordlist Only", 		action="store_true")
+	parser.add_argument("--hybrid",	 	 dest="hybridOnly",	help="Hybrid Attack", 		action="store_true")
+	parser.add_argument("--All",	 	 dest="allChecks",	help="All Attacks", 		action="store_true")
 
 	args = parser.parse_args()
 
@@ -320,7 +453,7 @@ if __name__ == "__main__":
 			oFile 	= workingDir + os.path.basename(hFile) + "_" + ts + ".log"
 			dbWork.db_checkFile(c, args.hash, wFile, oFile)
 			wCount = curentLines(wFile)
-			oCount = curentLines(oFile)
+			oCount = str(int(curentLines(oFile)) - 2) # header count = 2
 			printG("Cracked 	: " + oCount + " " + oFile)
 			printR("Not Cracked : " + wCount + " " + wFile)
 			exit()
@@ -354,6 +487,9 @@ if __name__ == "__main__":
 	if args.pFile is not None:
 		pFile = args.pFile
 		printY(pFile)
+
+	if args.addOn:
+		hashcat += " " + args.addOn + " "
 
 	# Set the Global timekeeper
 	startTime = dbWork.start()
