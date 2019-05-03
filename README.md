@@ -1,4 +1,7 @@
 # HashcatHerder
+
+![alt text](https://github.com/CBHue/HashcatHerder/blob/master/HashcatHerder.png)
+
 This is a set it an forget it hashcat wrapper written in python3. 
 it loops over a set of wordlists untill it cracks all the passwords or cycles thru all the wordlists. 
 
