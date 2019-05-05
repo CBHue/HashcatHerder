@@ -30,13 +30,13 @@ optional arguments:
   --rulesPlus           Extended Rules then Brute
 
 # Straight Mode - Just loop thru all the wordlists
-sudo python3 HashcatHerder.py -m 100 -f /passwords/hash2.txt
+sudo python3 HashcatHerder.py --mode 100 -f /passwords/hash2.txt --wordlist
 
 # Rules Mode + Straight Mode - Loop thru a quick set of Rules then all the Wordlists.
-sudo python3 HashcatHerder.py -m 100 -f /passwords/hash2.txt --rules
+sudo python3 HashcatHerder.py --mode 100 -f /passwords/hash2.txt --rules --wordlist
 
-# Rules Only Mode - Just loop thru all the wordlists and Rules in the rule directory.
-sudo python3 HashcatHerder.py -m 100 -f /passwords/hash2.txt --rulesOnly
+# All
+<pre>sudo python3 /opt/HashcatHerder/HashcatHerder.py -f ./ALL-USERNAMES.HASH --mode 1000 --All --addOn=&apos;-O --username&apos;</pre>
 
-# All Rules + Straight Mode - Loop thru all the Rules then run straight mode on all wordlists
-sudo python3 HashcatHerder.py -m 100 -f /passwords/hash2.txt --rulesPlus
+# DBCheck
+<pre>sudo python3 /opt/<font color="#EF2929"><b>Hash</b></font>catHerder/<font color="#EF2929"><b>Hash</b></font>catHerder.py --dbcheck ntds.hashes</pre>
