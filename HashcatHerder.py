@@ -474,7 +474,12 @@ if __name__ == "__main__":
 		exit()
 
 	if args.hFile is not None:
-		hFile = args.hFile
+		if os.path.isfile(args.hFile):
+			hFile = args.hFile
+		else:
+			printR("File Not Found: " + args.hFile)
+			exit()
+		
 		# create a unique identifier date + master
 		ts = time.strftime("%m%d%Y_%H_%M_%S", time.gmtime())
 		wFile 	= workingDir + os.path.basename(hFile) + "_" + ts
