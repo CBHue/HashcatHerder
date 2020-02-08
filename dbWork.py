@@ -72,11 +72,11 @@ def db_getHashCount(conn):
 	printP("Checking DB for Hash count")
 	conn.execute('pragma journal_mode=wal')
 	c = conn.cursor()
-	c.execute('SELECT count(*) from hashes') 
-	r = c.fetchall()
+	#c.execute('SELECT count(*) from hashes')
+	c.execute('SELECT MAX(_ROWID_) FROM "hashes" LIMIT 1;')
+	r = c.fetchone()
 	c.close()
-	count = ', ,'.join([str(i[0]) for i in r])
-	printP("Hash Count  : " + locale.format("%d", int(count), grouping=True))
+	printP("Hash Count  : " + locale.format("%d", int(r[0]), grouping=True))
 
 def db_checkFile(c, hashFile, workingFile, LogFile):
 	if hashFile:

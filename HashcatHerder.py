@@ -332,8 +332,8 @@ def fin(iSize):
 # Main #
 def main():
 
-	# This takes too long ...
-	#dbWork.db_getHashCount(c)
+	# This is a rough estimate assuming no deletions ...
+	dbWork.db_getHashCount(c)
 
 	printY("Start File  : " + hFile)
 	initialSize = curentLines(hFile)
