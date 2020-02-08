@@ -32,6 +32,7 @@ locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
 import dbWork
 import config
 import banner
+from helper import *
 
 # Configurations #
 hashcat 	= config.DIR_CONFIG['hashcat']
@@ -46,11 +47,6 @@ hybridDir 	= config.DIR_CONFIG['hybridDir']
 RuleOnlyDir	= config.DIR_CONFIG['RuleOnlyDir']
 dataDIR 	= config.DIR_CONFIG['dataDIR']
 DBFILE 		= config.DIR_CONFIG['DBFILE']
-
-def printR(out): print("\033[91m{}\033[00m" .format("[!] " + out)) 
-def printG(out): print("\033[92m{}\033[00m" .format("[*] " + out)) 
-def printY(out): print("\033[93m{}\033[00m" .format("[+] " + out)) 
-def printP(out): print("\033[95m{}\033[00m" .format("[-] " + out)) 
 
 def muxER(command):
 	result =[]
@@ -174,13 +170,6 @@ def hashCAT(hType, hFile, wordList, option):
 		#print(cmd)
 		realTimeMuxER(cmd)
 
-		# lets check to see if were done
-		nSize = curentLines(hFile)
-		iSize = crackCheck(iSize, nSize)
-
-		if nSize == "0":
-			printR("No more work to do")
-			fin(iSize)
 
 def loggER(message):
 	cmd = "echo \"" + message + "\" >> " + oFile 
@@ -237,6 +226,14 @@ def loopList(Dir,iSize,option):
 			hashCAT(hType,wFile,wordList,option)
 			counter += 1
 		
+			# lets check to see if were done
+			nSize = curentLines(hFile)
+			iSize = crackCheck(iSize, nSize)
+
+			if nSize == "0":
+				printR("No more work to do")
+				fin(iSize)
+							
 		else:
 			counter += 1
 			continue

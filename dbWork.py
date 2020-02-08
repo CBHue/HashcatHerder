@@ -27,8 +27,7 @@ from datetime import datetime
 import locale
 locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
 
-def printR(out): print("\033[91m{}\033[00m" .format("[!] " + out)) 
-def printP(out): print("\033[95m{}\033[00m" .format("[*] " + out)) 
+from helper import *
 
 def db_init(DBFILE):
 	conn = sqlite3.connect(DBFILE)
@@ -76,7 +75,7 @@ def db_getHashCount(conn):
 	c.execute('SELECT MAX(_ROWID_) FROM "hashes" LIMIT 1;')
 	r = c.fetchone()
 	c.close()
-	printP("Hash Count  : " + locale.format("%d", int(r[0]), grouping=True))
+	printY("Hash Count  : " + locale.format("%d", int(r[0]), grouping=True))
 
 def db_checkFile(c, hashFile, workingFile, LogFile):
 	if hashFile:
