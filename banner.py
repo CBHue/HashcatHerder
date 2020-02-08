@@ -9,13 +9,13 @@ def banner():
 `--'  `--'  `--`--' `----'  `--' `--'  `---'  `--`--'   `--'   `--'  `--'  `----' `--'     `---'   `----' `--' 
 """))
 
-def printY(out): print("\033[93m{}\033[00m" .format("[+] " + out)) 
+def printC(out): print("\033[96m{}\033[00m" .format("[-] " + out)) 
 
 def title():
     print("------------------------------------------------------------------------------------------------------")
-    printY("Tool      : HashcatHerder")
-    printY("Author    : CB Hue")
-    printY("Twitter   : @_cbhue_")
-    printY("github    : https://github.com/CBHue")
+    printC("Tool      : HashcatHerder")
+    printC("Author    : cbHu3")
+    printC("Twitter   : @_cbhue_")
+    printC("github    : https://github.com/CBHue")
     print("------------------------------------------------------------------------------------------------------")
     print("")

@@ -22,17 +22,15 @@
 DIR_CONFIG = {
 
 	# Hashcat Binary location
-	#'hashcat' : '/opt/hashcat-5.0.0/hashcat64.bin',
-	#'hashcat' : '/opt/hashcat-5.1.0/hashcat64.bin',
 	'hashcat' : '/opt/hashcat/hashcat',
 
 	# John script location
 	'john' : '/opt/JohnTheRipper/run/john',
 
 	# Script Working Directories
-	'workingDir' 	: '/opt/HashcatHerder/working/log/', 
-	'dataDIR'	: '/opt/HashcatHerder/working/db/',
-	'DBFILE'	: '/opt/HashcatHerder/working/db/hashMaster.db',
+	'workingDir' 	: '/mnt/NoName/PList/Working/log/', 
+	'dataDIR'	: '/mnt/NoName/PList/Working/db/',
+	'DBFILE'	: '/mnt/NoName/PList/Working/db/hashMaster.db',
 
 	# Wordlist Directories
 	'MainDir'	: '/mnt/NoName/PList/',
