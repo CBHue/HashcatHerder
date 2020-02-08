@@ -233,7 +233,7 @@ def loopList(Dir,iSize,option):
 			if nSize == "0":
 				printR("No more work to do")
 				fin(iSize)
-							
+
 		else:
 			counter += 1
 			continue
@@ -326,8 +326,72 @@ def fin(iSize):
 	dbWork.db_close(c)
 	sys.exit(1)
 
+def brutus():
+	printY("Brute Lower : " + str(lowER))
+	printY("Brute Upper : " + str(uppER))
+	if lowER == '+':
+		#we need to incrementing
+		charset = '?a' * uppER
+		charset = '--increment ' + charset
+		hashCAT(hType,wFile,charset,"Brute")
+	else:
+		for b in range(lowER, uppER + 1):
+			charset = '?a' * b
+
+
 # Main #
 def main():
+
+	def rules():
+		workCheck(c,initialSize)
+		printY("Rules       : " + rulesDir)
+		loopList(hybridDir, workingSize, "Rules")
+		dbWork.endT(startTime)
+
+	def wordlist():
+		workCheck(c,initialSize)
+		printY("Wordlist    : " + wordlistDir)
+		loopList(wordlistDir, workingSize, "WordList")
+		dbWork.endT(startTime)
+		
+	def rulesplus():
+		workCheck(c,initialSize)
+		printY("Rules+      : " + RuleOnlyDir)
+		loopList(RuleOnlyDir, workingSize, "Rules+")
+		dbWork.endT(startTime)	
+
+	def mask():
+		workCheck(c,initialSize)
+		printY("Hybrid Mask : " + '?a?a?a?a?a?a?a')
+		loopList(hybridDir, workingSize, "Hybrid")
+		dbWork.endT(startTime)
+
+	def hybridonly():
+		workCheck(c,initialSize)
+		printY("Hybrid Mask : " + hybridDir)
+		loopList(hybridDir, workingSize, "Mask")
+		dbWork.endT(startTime)
+
+	def brute(lowER,uppER):
+		printY("Brute Lower : " + str(lowER))
+		printY("Brute Upper : " + str(uppER))
+		if lowER == '+':
+			#we need to incrementing
+			charset = '?a' * uppER
+			charset = '--increment ' + charset
+			hashCAT(hType,wFile,charset,"Brute")
+		else:
+			for b in range(lowER, uppER + 1):
+				charset = '?a' * b
+
+	def all():
+		printY("Running All : wordList, Rules, RulesPlus, Mask, Hybrid, Brute[5,9]")
+		wordlist()
+		rules()
+		rulesplus()
+		mask()
+		hybrid()
+		brute(5,9)
 
 	# This is a rough estimate assuming no deletions ...
 	dbWork.db_getHashCount(c)
@@ -355,55 +419,18 @@ def main():
 	loggER("****************************************************")
 	loggER("")
 
-	# Rules will run a super one rule against smaller wordlists
-	if (args.rules) or args.allChecks:
-		workCheck(c,initialSize)
-		printY("Rules       : " + rulesDir)
-		loopList(hybridDir, workingSize, "Rules")
-		dbWork.endT(startTime)
+	# We are going to process the options as they are pased in ... 
+	for arguments in sys.argv:
+		check = str(arguments).lower()
+		check = check[2:]
 
-	# Wordlist ... Straight Attack Mode 
-	if args.wordOnly or args.allChecks:
-		workCheck(c,initialSize)
-		printY("Wordlist    : " + wordlistDir)
-		loopList(wordlistDir, workingSize, "WordList")
-		dbWork.endT(startTime)
-	
-	# Rules+ loops over multiple smaller rule files. THis may give quicker immediate results but will take longer in the end
-	if args.rulesPlus or args.allChecks:
-		workCheck(c,initialSize)
-		printY("Rules+      : " + RuleOnlyDir)
-		loopList(RuleOnlyDir, workingSize, "Rules+")
-		dbWork.endT(startTime)	
-
-	# Hybrid Mask + Wordlist / Wordlist + Mask Attack
-	if args.mask or args.allChecks:
-		workCheck(c,initialSize)
-		printY("Hybrid Mask : " + '?a?a?a?a?a?a?a')
-		loopList(hybridDir, workingSize, "Hybrid")
-		dbWork.endT(startTime)
-
-	# Incrementing hcmask attacks
-	if args.hybridOnly or args.allChecks:
-		workCheck(c,initialSize)
-		printY("Hybrid Mask : " + hybridDir)
-		loopList(hybridDir, workingSize, "Mask")
-		dbWork.endT(startTime)
-
-	# Brute force the limits entered
-	if args.brute:
-		printY("Brute Lower : " + str(lowER))
-		printY("Brute Upper : " + str(uppER))
-		if lowER == '+':
-			#we need to incrementing
-			charset = '?a' * uppER
-			charset = '--increment ' + charset
-			hashCAT(hType,wFile,charset,"Brute")
-		else:
-			for b in range(lowER, uppER + 1):
-				charset = '?a' * b
+		if check in vars(args):
+			fU = locals()[check]
+			fU()
 		
 	# If we got here we couldnt crack everything and ran out of things to try ....
+	print()
+	printR("We ran out of work ... =(")
 	fin(initialSize)
 
 if __name__ == "__main__":
@@ -435,12 +462,12 @@ if __name__ == "__main__":
 	#  7 | Hybrid Mask + Wordlist
 
 	parser.add_argument("--rules","--Rules",			dest="rules",		action="store_true", 	help="One Rule to Rule them all")
-	parser.add_argument("--wordlist","--Wordlist",		dest="wordOnly", 	action="store_true", 	help="Wordlist Only")
-	parser.add_argument("--rulesPlus","--RulesPlus",	dest="rulesPlus",	action="store_true", 	help="Extended Rules")
+	parser.add_argument("--wordlist","--Wordlist",		dest="wordlist", 	action="store_true", 	help="Wordlist Only")
+	parser.add_argument("--rulesPlus","--RulesPlus",	dest="rulesplus",	action="store_true", 	help="Extended Rules")
 	parser.add_argument("--brute","--Brute", 		 	dest="brute",		help="Ex: 2,3 - Brute Loop '?a?a' [2] to '?a?a?a' [3] Ex: +,3 incrementing '?a' to '?a?a?a' [3]", metavar='[+|any number],[any number]')
 	parser.add_argument("--mask","--Mask", 		 		dest="mask",		action="store_true", 	help="Mask Attack ex: '?a?a?a?a?a?a?a'")
-	parser.add_argument("--hybrid","--Hybrid",			dest="hybridOnly", 	action="store_true", 	help="Hybrid Attack")
-	parser.add_argument("--All",						dest="allChecks", 	action="store_true", 	help="All Attacks")
+	parser.add_argument("--hybrid","--Hybrid",			dest="hybridonly", 	action="store_true", 	help="Hybrid Attack")
+	parser.add_argument("--All","--all",				dest="all", 	action="store_true", 	help="All Attacks")
 
 	args = parser.parse_args()
 
