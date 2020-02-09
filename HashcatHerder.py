@@ -178,8 +178,9 @@ def loggER(message):
 def crackCheck(iSize,nSize):
 	global startTime
 	dbWork.endT(startTime)
-	printY("Starting hash file size: " + locale.format("%d", int(iSize), grouping=True))
-	printY("Current hash file size : " + '\033[1m' + locale.format("%d", int(nSize), grouping=True))
+	printY("Log File                : " + oFile)
+	printY("Starting hash file size : " + locale.format("%d", int(iSize), grouping=True))
+	printY("Current hash file size  : " + '\033[1m' + locale.format("%d", int(nSize), grouping=True))
 
 	if int(nSize) < int(iSize):
 		cracked = int( float(iSize)-float(nSize) )
@@ -191,7 +192,7 @@ def crackCheck(iSize,nSize):
 		return nSize
 
 	else:
-		printR("Nothing cracked this round")
+		printR("Nothing cracked this round ... "+ "\U0001F607")
 		print('')
 		return iSize
 
@@ -219,7 +220,8 @@ def loopList(Dir,iSize,option):
 			
 			loggER(wordList)
 			loggER("-------------------------------")
-
+			
+			printY('Attack 	: %s' % (option))
 			printY('File 	: %s %s out of %s' % (f, counter, totalWordLists))
 			print('')
 			# hash type , Working hash file, working Pot File, Type of test
