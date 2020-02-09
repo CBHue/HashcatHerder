@@ -430,7 +430,7 @@ def main():
 		
 	# If we got here we couldnt crack everything and ran out of things to try ....
 	print()
-	printR("We ran out of work ... =(")
+	printR("We ran out of work ... " + "\u001b[31m\u001b[31;1m\U0001F634\033[00m")
 	fin(initialSize)
 
 if __name__ == "__main__":
@@ -450,9 +450,9 @@ if __name__ == "__main__":
 	# Tool options
 	parser.add_argument("--mode",  		 dest="hType",	help="Hashcat Mode", 				metavar="13100")
 	parser.add_argument("-f", "--hfile", dest="hFile",										metavar="Hash.FILE")
-	parser.add_argument("--addOn",	 	 dest="addOn",	help="Add on Hashcat options", 		metavar="\"-O -w 3 -D1,2\"")
+	parser.add_argument("--addOn",	 	 dest="addOn",	help="Add on Hashcat options", 		metavar="\"--remove -w 4\"")
 	parser.add_argument("-p", "--pFile", dest="pFile",	help="Alternate potfile", 			metavar="pot.file")
-	parser.add_argument("--dbcheck",	 dest="hash",	help="Check DB for cracked hash", 	metavar="'5f4dcc3b5aa765d61d8327deb882cf99'")
+	parser.add_argument("--dbcheck",	 dest="hash",	help="Check DB for cracked hash", 	metavar="'5f4dcc3b5aa765d61d8327deb882cf99' or './hash.file'", )
 
 	#  - [ Attack Modes ] -
 	#  0 | Straight
@@ -467,7 +467,7 @@ if __name__ == "__main__":
 	parser.add_argument("--brute","--Brute", 		 	dest="brute",		help="Ex: 2,3 - Brute Loop '?a?a' [2] to '?a?a?a' [3] Ex: +,3 incrementing '?a' to '?a?a?a' [3]", metavar='[+|any number],[any number]')
 	parser.add_argument("--mask","--Mask", 		 		dest="mask",		action="store_true", 	help="Mask Attack ex: '?a?a?a?a?a?a?a'")
 	parser.add_argument("--hybrid","--Hybrid",			dest="hybridonly", 	action="store_true", 	help="Hybrid Attack")
-	parser.add_argument("--All","--all",				dest="all", 	action="store_true", 	help="All Attacks")
+	parser.add_argument("--All","--all",				dest="all", 		action="store_true", 	help="All Attacks")
 
 	args = parser.parse_args()
 
