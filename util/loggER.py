@@ -28,7 +28,7 @@ def screen(msg, mColor="", sts="", sColor=""):
 		
 	# Do we have a status to print?
 	if (sts):
-		print(f'{colored(msg, mColor):35}:  {colored(sts, sColor)}')
+		print(f'{colored(msg, mColor):45}:  {colored(sts, sColor)}')
 	else:
 		print(colored(msg, mColor))
 

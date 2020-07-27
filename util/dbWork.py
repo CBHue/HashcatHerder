@@ -28,6 +28,7 @@ import locale
 locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
 
 from util.helper import *
+import util.loggER as logOUT
 
 def db_init(DBFILE):
 	conn = sqlite3.connect(DBFILE)
@@ -75,7 +76,7 @@ def db_getHashCount(conn):
 	c.execute('SELECT MAX(_ROWID_) FROM "hashes" LIMIT 1;')
 	r = c.fetchone()
 	c.close()
-	printY("Hash Count  : " + locale.format("%d", int(r[0]), grouping=True))
+	logOUT.screen("[~] Hash Count", "yellow"  , locale.format_string("%d", int(r[0]), grouping=True), "cyan")
 
 def db_checkFile(c, hashFile, workingFile, LogFile):
 	if hashFile:

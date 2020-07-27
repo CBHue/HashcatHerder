@@ -29,7 +29,7 @@ from argparse import ArgumentParser
 locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
 
 # Custom Modules
-import util.dbWork
+import util.dbWork as dbWork
 import util.config as config
 import util.banner as banner
 from util.helper import *
@@ -92,8 +92,8 @@ def hashCAT(hType, hFile, wordList, option):
 		counter = 1
 		for r in rList:
 			rules = Dir + r
-			printY('Rule file   : %s %s out of %s' % (r, counter, totalRules))
-			printY('Wordlist    : %s ' % (wordList))
+			logOUT.screen("[~] Rule File", "yellow", '%s %s out of %s' % (r, counter, totalRules), "cyan")
+			logOUT.screen("[~] Wordlist", "yellow", wordList, "cyan")
 			print('')
 			cmd = "%s --rules %s --potfile-path %s -o %s -a 0 -m %s %s %s" % (hashcat,rules,potFile,oFile,hType,hFile,wordList)
 			#print(cmd)
@@ -117,15 +117,15 @@ def hashCAT(hType, hFile, wordList, option):
 		counter = 1
 		for f in fList:
 			file = Dir + f
-			printY('Mask Right  : %s %s out of %s' % (f, counter, total))
-			printY('Wordlist    : %s ' % (wordList))
+			logOUT.screen("[~] Mask Right", "yellow", '%s %s out of %s' % (f, counter, total), "cyan")
+			logOUT.screen("[~] Wordlist", "yellow", wordList, "cyan")
 
 			cmd = "%s --potfile-path %s -o %s -a 6 -m %s %s %s %s" % (hashcat, potFile, oFile, hType, hFile, wordList, file)
 			#print(cmd)
 			realTimeMuxER(cmd)
 
-			printY('Mask Left   : %s %s out of %s' % (f, counter, total))
-			printY('Wordlist    : %s ' % (wordList))
+			logOUT.screen("[~] Mask Left", "yellow", '%s %s out of %s' % (f, counter, total), "cyan")
+			logOUT.screen("[~] Wordlist", "yellow", wordList, "cyan")
 			print('')
 			cmd = "%s --potfile-path %s -o %s -a 7 -m %s %s %s %s" % (hashcat, potFile, oFile, hType, hFile, file, wordList)
 			#print(cmd)
@@ -179,9 +179,9 @@ def loggER(message):
 def crackCheck(iSize,nSize):
 	global startTime
 	dbWork.endT(startTime)
-	printY("Log File                : " + oFile)
-	printY("Starting hash file size : " + locale.format_string("%d", int(iSize), grouping=True))
-	printY("Current hash file size  : " + '\033[1m' + locale.format_string("%d", int(nSize), grouping=True))
+	logOUT.screen("[~] Log File", "yellow", oFile, "cyan")
+	logOUT.screen("[~] Starting hash file size", "yellow", locale.format_string("%d", int(iSize), grouping=True), "cyan")
+	logOUT.screen("[~] Current hash file size ", "yellow", locale.format_string("%d", int(nSize), grouping=True), "cyan")
 
 	if int(nSize) < int(iSize):
 		cracked = int( float(iSize)-float(nSize) )
@@ -193,7 +193,7 @@ def crackCheck(iSize,nSize):
 		return nSize
 
 	else:
-		printR("Nothing cracked this round ... "+ "\U0001F607")
+		logOUT.screen("[~] Nothing cracked this round ...", "red","\U0001F607")
 		print('')
 		return iSize
 
@@ -227,8 +227,10 @@ def loopList(Dir,iSize,option,mod=""):
 			loggER(wordList)
 			loggER("-------------------------------")
 			
-			printY('Attack 	: %s' % (option))
-			printY('File 	: %s %s out of %s' % (f, counter, totalWordLists))
+			logOUT.screen("[~] Attack", "red", option, "cyan")
+			logOUT.screen("[~] File", "red", '%s %s out of %s' % (f, counter, totalWordLists), "cyan")
+			#printY('Attack 	: %s' % (option))
+			#printY('File 	: %s %s out of %s' % (f, counter, totalWordLists))
 			print('')
 			# hash type , Working hash file, working Pot File, Type of test
 			hashCAT(hType,wFile,wordList,option)
@@ -303,7 +305,7 @@ def workCheck(c,iSize):
 		# No more work to do
 		fin(iSize)
 	else:
-		printY("Work to do?	: " + "\033[92mTrue\033[00m")
+		logOUT.screen("[+] Work to do?", "yellow"  , "True", "green")
 
 def fin(iSize):
 
@@ -314,11 +316,11 @@ def fin(iSize):
 	loggER("")
 
 	print('')
-	printR("Fin.")
-	printY("Starting Hashes Count           : " + locale.format_string("%d", int(iSize), grouping=True))
-	printY("Ending Hashes Count             : " + locale.format_string("%d", int(currentSize), grouping=True))
-	printY("Remaining Hashes are located in : " + wFile)
-	printG("Complete Log File located in    : " + oFile)
+	logOUT.screen("[!] Fin", "red")
+	logOUT.screen("[+] Starting Hashes Count", "yellow"  , locale.format_string("%d", int(iSize), grouping=True), "cyan")
+	logOUT.screen("[+] Ending Hashes Count", "yellow"  , locale.format_string("%d", int(currentSize), grouping=True), "cyan")
+	logOUT.screen("[+] Remaining Hashes are located in", "yellow"  , wFile, "cyan")
+	logOUT.screen("[+] Complete Log File located in", "yellow"  , oFile, "cyan")
 	print('')
 
 	# Copy log file to current hash path
@@ -346,8 +348,8 @@ def fin(iSize):
 	sys.exit(1)
 
 def brutus():
-	printY("Brute Lower : " + str(lowER))
-	printY("Brute Upper : " + str(uppER))
+	logOUT.screen("[+] Brute Lower", "yellow"  , str(lowER), "cyan")
+	logOUT.screen("[+] Brute Upper", "yellow"  , str(uppER), "cyan")
 	if lowER == '+':
 		#we need to incrementing
 		charset = '?a' * uppER
@@ -363,18 +365,18 @@ def main():
 
 	def notify():
 		# Check if VLC is installed
-		printY("Notify      : " + "\033[92mTrue\033[00m")
-		printY("Rules       : " + rulesDir)
+		logOUT.screen("[+] Notify", "yellow"  , "True", "cyan")
+		logOUT.screen("[+] Rules" , "yellow"  , rulesDir)
 
 	def rules():
 		workCheck(c,initialSize)
-		printY("Rules       : " + rulesDir)
+		logOUT.screen("[+] Rules" , "yellow"  , rulesDir)
 		loopList(hybridDir, workingSize, "Rules")
 		dbWork.endT(startTime)
 
 	def wordlist():
 		workCheck(c,initialSize)
-		printY("Wordlist    : " + wordlistDir)
+		logOUT.screen("[+] Wordlist" , "yellow"  , wordlistDir)
 		if args.wordlist != 99999:
 			loopList(wordlistDir, workingSize, "WordList", args.wordlist)
 		else:
@@ -383,25 +385,26 @@ def main():
 		
 	def rulesplus():
 		workCheck(c,initialSize)
-		printY("Rules+      : " + RuleOnlyDir)
+		logOUT.screen("[+] Rules+" , "yellow"  , RuleOnlyDir)
 		loopList(RuleOnlyDir, workingSize, "Rules+")
 		dbWork.endT(startTime)	
 
 	def mask():
 		workCheck(c,initialSize)
-		printY("Hybrid Mask : " + '?a?a?a?a?a?a?a')
+		logOUT.screen("[+] Hybrid Mask" , "yellow"  , '?a?a?a?a?a?a?a')
 		loopList(hybridDir, workingSize, "Hybrid")
 		dbWork.endT(startTime)
 
 	def hybridonly():
 		workCheck(c,initialSize)
-		printY("Hybrid Mask : " + hybridDir)
+		logOUT.screen("[+] Hybrid Mask" , "yellow"  , hybridDir)
 		loopList(hybridDir, workingSize, "Mask")
 		dbWork.endT(startTime)
 
 	def brute(lowER,uppER):
-		printY("Brute Lower : " + str(lowER))
-		printY("Brute Upper : " + str(uppER))
+		logOUT.screen("[+] Brute Lower", "yellow"  , str(lowER), "cyan")
+		logOUT.screen("[+] Brute Upper", "yellow"  , str(uppER), "cyan")
+
 		if lowER == '+':
 			#we need to incrementing
 			charset = '?a' * uppER
@@ -412,7 +415,7 @@ def main():
 				charset = '?a' * b
 
 	def all():
-		printY("Running All : wordList, Rules, RulesPlus, Mask, Hybrid, Brute[5,9]")
+		logOUT.screen("Running All : wordList, Rules, RulesPlus, Mask, Hybrid, Brute[5,9]")
 		wordlist()
 		rules()
 		rulesplus()
@@ -423,13 +426,13 @@ def main():
 	# This is a rough estimate assuming no deletions ...
 	dbWork.db_getHashCount(c)
 
-	printY("Start File  : " + hFile)
+	logOUT.screen("[~] Start File", "yellow"  , hFile, "cyan")
 	initialSize = curentLines(hFile)
-	printG("Start Count : " + locale.format_string("%d", int(initialSize), grouping=True))
-	printY("Mode        : " + hType)
-	printY("Hash File   : " + wFile)
-	printY("Log File    : " + oFile)
-	printY("Pot File    : " + potFile)
+	logOUT.screen("[~] Start Count", "yellow"  , int(initialSize), "cyan")
+	logOUT.screen("[~] Mode", "yellow"  , hType, "cyan")
+	logOUT.screen("[~] Hash File", "yellow"  , wFile, "cyan")
+	logOUT.screen("[~] Log File", "yellow"  , oFile, "cyan")
+	logOUT.screen("[~] Pot File", "yellow"  , potFile, "cyan")
 
 	# Check the potfile ... Think this is faster than checking a larger pot in everyloop
 	#checkPot() 
@@ -439,8 +442,8 @@ def main():
 	dbWork.endT(startTime)
 
 	workingSize = curentLines(wFile)
-	printG("New Count   : " + locale.format_string("%d", int(workingSize), grouping=True))
-	
+	logOUT.screen("[+] New Count", "green"  , int(workingSize), "cyan")
+
 	loggER("")
 	loggER(time.strftime("%m/%d/%Y %H:%M:%S", time.gmtime()) + ": " + locale.format_string("%d", int(workingSize), grouping=True) + " hash(es) to crack")
 	loggER("****************************************************")
@@ -456,8 +459,9 @@ def main():
 			fU()
 		
 	# If we got here we couldnt crack everything and ran out of things to try ....
-	print()
-	printR("We ran out of work ... " + "\u001b[31m\u001b[31;1m\U0001F634\033[00m")
+	logOUT.screen("")
+	logOUT.screen("[!] We ran out of work ...", "red"  , "\u001b[31m\u001b[31;1m\U0001F634\033[00m", "cyan")
+
 	fin(initialSize)
 
 if __name__ == "__main__":
@@ -516,19 +520,21 @@ if __name__ == "__main__":
 			dbWork.db_checkFile(c, args.hash, wFile, oFile)
 			wCount = curentLines(wFile)
 			oCount = str(int(curentLines(oFile)) - 2) # header count = 2
-			printG("Cracked 	: " + oCount + " " + oFile)
-			printR("Not Cracked : " + wCount + " " + wFile)
+
+			logOUT.screen("[+] Cracked", "green"  , oCount + " " + oFile)
+			logOUT.screen("[!] Not Cracked", "red", wCount + " " + wFile)
+
 			exit()
-		
-		printR("Assuming its a single hash")	
-		printP("Checking for : " + args.hash)
+
+		logOUT.screen("[+] Checking for", "yellow", args.hash )		
+
 		r = dbWork.db_search(c, args.hash)
 		if type(r) is str:
-			printR("Hash not cracked yet\n")
+			logOUT.screen("[!] Hash not cracked yet", "red")
 			# Hash is already cracked
 		else:
 			password = ', ,'.join([str(i[0]) for i in r]) + "\n"
-			printG("Hash Cracked : " + str(password))
+			logOUT.screen("[!] Hash Cracked", "green", str(password))
 		exit()	
 
 	if (args.hFile is None) or (args.hType is None):
@@ -563,23 +569,23 @@ if __name__ == "__main__":
 		try:
 			uppER = int(uppER)
 		except ValueError:
-			printR("Upper limit must be an int larger than the lower limit")
+			logOUT.screen("[!] Upper limit must be an int larger than the lower limit", "red")
 			exit()
 
 		# Validate the lower limit.
 		if lowER == "+":
 			# we dont need to verify ... we will increment
-			print("increment")
+			logOUT.screen("[!] increment", "yellow")
 		
 		else:
 			try:
 				lowER = int(lowER)
 			except ValueError:
-				printR("Lower limit must be an int lower than the upper limit")
+				logOUT.screen("[!] Lower limit must be an int lower than the upper limit", "red")
 				exit()
 			# Now lets check to make sure upper is not lower than lower
 			if lowER > uppER:
-				printR("The lower limit [" + str(lowER) + "] must to be lower than the upper [" + str(uppER) + "] limit")
+				logOUT.screen("[!] The lower limit [" + str(lowER) + "] must to be lower than the upper [" + str(uppER) + "] limit", "red")
 				exit()
 
 	if args.addOn:
