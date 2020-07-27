@@ -105,7 +105,7 @@ def hashCAT(hType, hFile, wordList, option):
 			iSize = crackCheck(iSize, nSize)
 
 			if nSize == "0":
-				printR("No more work to do")
+				logOUT.screen("[!] No more work to do", "red")
 				fin(iSize)
 
 	if option == "Mask":
@@ -138,21 +138,21 @@ def hashCAT(hType, hFile, wordList, option):
 			iSize = crackCheck(iSize, nSize)
 
 			if nSize == "0":
-				printR("No more work to do")
+				logOUT.screen("[!] No more work to do", "red")
 				fin(iSize)
 
 	if option == "Hybrid":
 		hyb = '?a?a?a?a?a?a?a'
 
-		printY('Mask Right  : %s ' % (hyb))
-		printY('Wordlist    : %s ' % (wordList))
+		logOUT.screen("[~] Mask Right", "yellow", hyb, "cyan")
+		logOUT.screen("[~] Wordlist", "yellow", wordList, "cyan")
 		print('')
 		cmd = "%s --potfile-path %s -o %s -a 6 -m %s %s %s %s -i" % (hashcat, potFile, oFile, hType, hFile, wordList, hyb)
 		#print(cmd)
 		realTimeMuxER(cmd)
 
-		printY('Mask Left   : %s ' % (hyb))
-		printY('Wordlist    : %s ' % (wordList))
+		logOUT.screen("[~] Mask Left", "yellow", hyb, "cyan")
+		logOUT.screen("[~] Wordlist", "yellow", wordList, "cyan")
 		print('')
 		cmd = "%s --potfile-path %s -o %s -a 7 -m %s %s %s %s -i" % (hashcat, potFile, oFile, hType, hFile, hyb, wordList)
 		#print(cmd)
@@ -160,7 +160,7 @@ def hashCAT(hType, hFile, wordList, option):
 
 	if option == "Brute":
 		brute = wordList
-		printY('Brute  	: %s ' % (brute))
+		logOUT.screen("[~] Brute", "yellow", brute, "cyan")
 		print('')
 		cmd = "%s --potfile-path %s -o %s -a 3 -m %s %s %s" % (hashcat, potFile, oFile, hType, hFile, brute)
 		#printP(cmd)
@@ -185,7 +185,7 @@ def crackCheck(iSize,nSize):
 
 	if int(nSize) < int(iSize):
 		cracked = int( float(iSize)-float(nSize) )
-		printG("Cracked " + locale.format_string("%d", int(cracked), grouping=True) + " hash(es) out of " + locale.format_string("%d", int(iSize), grouping=True))
+		logOUT.screen("Cracked " + locale.format_string("%d", int(cracked), grouping=True) + " hash(es) out of " + locale.format_string("%d", int(iSize), grouping=True), "green")
 		print('')
 		
 		loggER(locale.format_string("%d", int(cracked), grouping=True) + " hash(es) cracked out of "+ locale.format_string("%d", int(iSize), grouping=True))
@@ -229,8 +229,7 @@ def loopList(Dir,iSize,option,mod=""):
 			
 			logOUT.screen("[~] Attack", "red", option, "cyan")
 			logOUT.screen("[~] File", "red", '%s %s out of %s' % (f, counter, totalWordLists), "cyan")
-			#printY('Attack 	: %s' % (option))
-			#printY('File 	: %s %s out of %s' % (f, counter, totalWordLists))
+
 			print('')
 			# hash type , Working hash file, working Pot File, Type of test
 			hashCAT(hType,wFile,wordList,option)
@@ -241,7 +240,7 @@ def loopList(Dir,iSize,option,mod=""):
 			iSize = crackCheck(iSize, nSize)
 
 			if nSize == "0":
-				printR("No more work to do")
+				logOUT.screen("[!] No more work to do", "red")
 				fin(iSize)
 
 		else:
@@ -258,8 +257,8 @@ def curentLines(file):
 def checkPot():
 	# Check if a pot dir was configured
 	if os.path.isdir(potDir):
-		printP("POT Check   : " + potDir)
-		printR('')
+		logOUT.screen("[-] POT Check", "magenta", potDir, "cyan")
+		print('')
 
 		cmd = "ls -Sr " + potDir
 		result = muxER(cmd)
@@ -276,7 +275,8 @@ def checkPot():
 				counter += 1
 				outFile = wFile + "-" + str(counter)
 				cmd = "%s -m %s --potfile-path %s --left %s >> %s" % (hashcat, hType, potfile, hashfile, outFile)
-				printP("%s" % cmd)
+
+				logOUT.screen(cmd, "magenta")
 				realTimeMuxER(cmd)
 				# reset hashfile to use output from above command
 				hashfile = outFile
@@ -291,7 +291,7 @@ def checkPot():
 	# if there is not pot directory just check the normal pot file
 	else:
 		cmd = "%s -m %s --left %s >> %s" % (hashcat, hType, hFile, wFile)
-		printP("%s" % cmd)
+		logOUT.screen(cmd, "magenta")
 		realTimeMuxER(cmd)
 
 	# if none of the above worked then just back up the hash file and move on
@@ -317,8 +317,8 @@ def fin(iSize):
 
 	print('')
 	logOUT.screen("[!] Fin", "red")
-	logOUT.screen("[+] Starting Hashes Count", "yellow"  , locale.format_string("%d", int(iSize), grouping=True), "cyan")
-	logOUT.screen("[+] Ending Hashes Count", "yellow"  , locale.format_string("%d", int(currentSize), grouping=True), "cyan")
+	logOUT.screen("[+] Starting Hashes Count", "yellow"  , locale.format_string("%d", int(iSize), grouping=True), "green")
+	logOUT.screen("[+] Ending Hashes Count", "yellow"  , locale.format_string("%d", int(currentSize), grouping=True), "green")
 	logOUT.screen("[+] Remaining Hashes are located in", "yellow"  , wFile, "cyan")
 	logOUT.screen("[+] Complete Log File located in", "yellow"  , oFile, "cyan")
 	print('')
@@ -337,12 +337,13 @@ def fin(iSize):
 
 	if args.notify:
 		USER = os.getlogin()
+		media = os.path.abspath(os.path.dirname(sys.argv[0])) + "/media/"
 		if currentSize < iSize:
 			# Notify listeners we cracked something
-			cmd = "sudo -u " + USER + " vlc --intf dummy --no-loop --play-and-exit /home/cb/Dev/HashcatHerder/Util/Yes.mp3 2> /dev/null"
+			cmd = "sudo -u " + USER + " vlc --intf dummy --no-loop --play-and-exit " + media + "Yes.mp3 2> /dev/null"
 		else:
 			# Notify users we failed ...
-			cmd = "sudo -u " + USER + " vlc --intf dummy --no-loop --play-and-exit /home/cb/Dev/HashcatHerder/Util/No.mp3 2> /dev/null"
+			cmd = "sudo -u " + USER + " vlc --intf dummy --no-loop --play-and-exit " + media + "No.mp3 2> /dev/null"
 		muxER(cmd)
 
 	sys.exit(1)
@@ -366,17 +367,17 @@ def main():
 	def notify():
 		# Check if VLC is installed
 		logOUT.screen("[+] Notify", "yellow"  , "True", "cyan")
-		logOUT.screen("[+] Rules" , "yellow"  , rulesDir)
+		logOUT.screen("[+] Rules" , "yellow"  , rulesDir, "cyan")
 
 	def rules():
 		workCheck(c,initialSize)
-		logOUT.screen("[+] Rules" , "yellow"  , rulesDir)
+		logOUT.screen("[+] Rules" , "yellow"  , rulesDir, "cyan")
 		loopList(hybridDir, workingSize, "Rules")
 		dbWork.endT(startTime)
 
 	def wordlist():
 		workCheck(c,initialSize)
-		logOUT.screen("[+] Wordlist" , "yellow"  , wordlistDir)
+		logOUT.screen("[+] Wordlist" , "yellow"  , wordlistDir, "cyan")
 		if args.wordlist != 99999:
 			loopList(wordlistDir, workingSize, "WordList", args.wordlist)
 		else:
@@ -385,7 +386,7 @@ def main():
 		
 	def rulesplus():
 		workCheck(c,initialSize)
-		logOUT.screen("[+] Rules+" , "yellow"  , RuleOnlyDir)
+		logOUT.screen("[+] Rules+" , "yellow"  , RuleOnlyDir, "cyan")
 		loopList(RuleOnlyDir, workingSize, "Rules+")
 		dbWork.endT(startTime)	
 
@@ -397,7 +398,7 @@ def main():
 
 	def hybridonly():
 		workCheck(c,initialSize)
-		logOUT.screen("[+] Hybrid Mask" , "yellow"  , hybridDir)
+		logOUT.screen("[+] Hybrid Mask" , "yellow"  , hybridDir, "cyan")
 		loopList(hybridDir, workingSize, "Mask")
 		dbWork.endT(startTime)
 
@@ -428,7 +429,7 @@ def main():
 
 	logOUT.screen("[~] Start File", "yellow"  , hFile, "cyan")
 	initialSize = curentLines(hFile)
-	logOUT.screen("[~] Start Count", "yellow"  , int(initialSize), "cyan")
+	logOUT.screen("[~] Start Count", "yellow"  , int(initialSize), "green")
 	logOUT.screen("[~] Mode", "yellow"  , hType, "cyan")
 	logOUT.screen("[~] Hash File", "yellow"  , wFile, "cyan")
 	logOUT.screen("[~] Log File", "yellow"  , oFile, "cyan")
@@ -442,7 +443,8 @@ def main():
 	dbWork.endT(startTime)
 
 	workingSize = curentLines(wFile)
-	logOUT.screen("[+] New Count", "green"  , int(workingSize), "cyan")
+
+	logOUT.screen("[+] New Count", "green"  , str(workingSize), "green")
 
 	loggER("")
 	loggER(time.strftime("%m/%d/%Y %H:%M:%S", time.gmtime()) + ": " + locale.format_string("%d", int(workingSize), grouping=True) + " hash(es) to crack")
@@ -559,7 +561,7 @@ if __name__ == "__main__":
 
 	if args.pFile is not None:
 		pFile = args.pFile
-		printY(pFile)
+		logOUT.screen(pFile, "yellow")
 
 	if args.brute is not None:
 		# we need to get the upper and lower limits
