@@ -29,10 +29,11 @@ from argparse import ArgumentParser
 locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
 
 # Custom Modules
-import dbWork
-import config
-import banner
-from helper import *
+import util.dbWork
+import util.config as config
+import util.banner as banner
+from util.helper import *
+import util.loggER as logOUT
 
 # Configurations #
 hashcat 	= config.DIR_CONFIG['hashcat']
@@ -119,14 +120,14 @@ def hashCAT(hType, hFile, wordList, option):
 			printY('Mask Right  : %s %s out of %s' % (f, counter, total))
 			printY('Wordlist    : %s ' % (wordList))
 
-			cmd = "%s -O --potfile-path %s -o %s -a 6 -m %s %s %s %s" % (hashcat, potFile, oFile, hType, hFile, wordList, file)
+			cmd = "%s --potfile-path %s -o %s -a 6 -m %s %s %s %s" % (hashcat, potFile, oFile, hType, hFile, wordList, file)
 			#print(cmd)
 			realTimeMuxER(cmd)
 
 			printY('Mask Left   : %s %s out of %s' % (f, counter, total))
 			printY('Wordlist    : %s ' % (wordList))
 			print('')
-			cmd = "%s -O --potfile-path %s -o %s -a 7 -m %s %s %s %s" % (hashcat, potFile, oFile, hType, hFile, file, wordList)
+			cmd = "%s --potfile-path %s -o %s -a 7 -m %s %s %s %s" % (hashcat, potFile, oFile, hType, hFile, file, wordList)
 			#print(cmd)
 			realTimeMuxER(cmd)	
 			
@@ -146,14 +147,14 @@ def hashCAT(hType, hFile, wordList, option):
 		printY('Mask Right  : %s ' % (hyb))
 		printY('Wordlist    : %s ' % (wordList))
 		print('')
-		cmd = "%s --remove --potfile-path %s -o %s -a 6 -m %s %s %s %s -i" % (hashcat, potFile, oFile, hType, hFile, wordList, hyb)
+		cmd = "%s --potfile-path %s -o %s -a 6 -m %s %s %s %s -i" % (hashcat, potFile, oFile, hType, hFile, wordList, hyb)
 		#print(cmd)
 		realTimeMuxER(cmd)
 
 		printY('Mask Left   : %s ' % (hyb))
 		printY('Wordlist    : %s ' % (wordList))
 		print('')
-		cmd = "%s -O --potfile-path %s -o %s -a 7 -m %s %s %s %s -i" % (hashcat, potFile, oFile, hType, hFile, hyb, wordList)
+		cmd = "%s --potfile-path %s -o %s -a 7 -m %s %s %s %s -i" % (hashcat, potFile, oFile, hType, hFile, hyb, wordList)
 		#print(cmd)
 		realTimeMuxER(cmd)	
 
@@ -166,7 +167,7 @@ def hashCAT(hType, hFile, wordList, option):
 		realTimeMuxER(cmd)
 
 	if option == "WordList":
-		cmd = "%s -O --potfile-path %s -o %s -a 0 -m %s %s %s" % (hashcat, potFile, oFile, hType, hFile, wordList)
+		cmd = "%s --potfile-path %s -o %s -a 0 -m %s %s %s" % (hashcat, potFile, oFile, hType, hFile, wordList)
 		#print(cmd)
 		realTimeMuxER(cmd)
 
@@ -179,15 +180,15 @@ def crackCheck(iSize,nSize):
 	global startTime
 	dbWork.endT(startTime)
 	printY("Log File                : " + oFile)
-	printY("Starting hash file size : " + locale.format("%d", int(iSize), grouping=True))
-	printY("Current hash file size  : " + '\033[1m' + locale.format("%d", int(nSize), grouping=True))
+	printY("Starting hash file size : " + locale.format_string("%d", int(iSize), grouping=True))
+	printY("Current hash file size  : " + '\033[1m' + locale.format_string("%d", int(nSize), grouping=True))
 
 	if int(nSize) < int(iSize):
 		cracked = int( float(iSize)-float(nSize) )
-		printG("Cracked " + locale.format("%d", int(cracked), grouping=True) + " hash(es) out of " + locale.format("%d", int(iSize), grouping=True))
+		printG("Cracked " + locale.format_string("%d", int(cracked), grouping=True) + " hash(es) out of " + locale.format_string("%d", int(iSize), grouping=True))
 		print('')
 		
-		loggER(locale.format("%d", int(cracked), grouping=True) + " hash(es) cracked out of "+ locale.format("%d", int(iSize), grouping=True))
+		loggER(locale.format_string("%d", int(cracked), grouping=True) + " hash(es) cracked out of "+ locale.format_string("%d", int(iSize), grouping=True))
 		loggER("")
 		return nSize
 
@@ -196,7 +197,7 @@ def crackCheck(iSize,nSize):
 		print('')
 		return iSize
 
-def loopList(Dir,iSize,option):
+def loopList(Dir,iSize,option,mod=""):
 	'''
 	Dir 	: String: Directory to get wordlist
 	iSize 	: String: initial file size 
@@ -206,6 +207,11 @@ def loopList(Dir,iSize,option):
 	these txt files are the word lists we will use for this hashcat round
 	'''
 	cmd = "ls " + "-Sr " + Dir + " | grep \".txt\""
+
+	# You can only check the amount of logs you want ... [tail -5 | head -5]
+	if mod:
+		cmd = "ls " + "-Sr " + Dir + " | grep \".txt\" | tail -" + str(mod)
+
 	result = muxER(cmd)
 	pList = result.split('\n')
 
@@ -297,20 +303,20 @@ def workCheck(c,iSize):
 		# No more work to do
 		fin(iSize)
 	else:
-		printG("Work to do?	: True")
+		printY("Work to do?	: " + "\033[92mTrue\033[00m")
 
 def fin(iSize):
 
 	currentSize = curentLines(wFile)
 	loggER("")
 	loggER("****************************************************")
-	loggER(time.strftime("%m/%d/%Y %H:%M:%S", time.gmtime()) + ": " + locale.format("%d", int(currentSize), grouping=True) + " hash(es) not cracked")
+	loggER(time.strftime("%m/%d/%Y %H:%M:%S", time.gmtime()) + ": " + locale.format_string("%d", int(currentSize), grouping=True) + " hash(es) not cracked")
 	loggER("")
 
 	print('')
 	printR("Fin.")
-	printY("Starting Hashes Count           : " + locale.format("%d", int(iSize), grouping=True))
-	printY("Ending Hashes Count             : " + locale.format("%d", int(currentSize), grouping=True))
+	printY("Starting Hashes Count           : " + locale.format_string("%d", int(iSize), grouping=True))
+	printY("Ending Hashes Count             : " + locale.format_string("%d", int(currentSize), grouping=True))
 	printY("Remaining Hashes are located in : " + wFile)
 	printG("Complete Log File located in    : " + oFile)
 	print('')
@@ -326,6 +332,17 @@ def fin(iSize):
 	
 	dbWork.endT(startTime)
 	dbWork.db_close(c)
+
+	if args.notify:
+		USER = os.getlogin()
+		if currentSize < iSize:
+			# Notify listeners we cracked something
+			cmd = "sudo -u " + USER + " vlc --intf dummy --no-loop --play-and-exit /home/cb/Dev/HashcatHerder/Util/Yes.mp3 2> /dev/null"
+		else:
+			# Notify users we failed ...
+			cmd = "sudo -u " + USER + " vlc --intf dummy --no-loop --play-and-exit /home/cb/Dev/HashcatHerder/Util/No.mp3 2> /dev/null"
+		muxER(cmd)
+
 	sys.exit(1)
 
 def brutus():
@@ -344,6 +361,11 @@ def brutus():
 # Main #
 def main():
 
+	def notify():
+		# Check if VLC is installed
+		printY("Notify      : " + "\033[92mTrue\033[00m")
+		printY("Rules       : " + rulesDir)
+
 	def rules():
 		workCheck(c,initialSize)
 		printY("Rules       : " + rulesDir)
@@ -353,7 +375,10 @@ def main():
 	def wordlist():
 		workCheck(c,initialSize)
 		printY("Wordlist    : " + wordlistDir)
-		loopList(wordlistDir, workingSize, "WordList")
+		if args.wordlist != 99999:
+			loopList(wordlistDir, workingSize, "WordList", args.wordlist)
+		else:
+			loopList(wordlistDir, workingSize, "WordList")
 		dbWork.endT(startTime)
 		
 	def rulesplus():
@@ -400,7 +425,7 @@ def main():
 
 	printY("Start File  : " + hFile)
 	initialSize = curentLines(hFile)
-	printY("Start Count : " + locale.format("%d", int(initialSize), grouping=True))
+	printG("Start Count : " + locale.format_string("%d", int(initialSize), grouping=True))
 	printY("Mode        : " + hType)
 	printY("Hash File   : " + wFile)
 	printY("Log File    : " + oFile)
@@ -414,10 +439,10 @@ def main():
 	dbWork.endT(startTime)
 
 	workingSize = curentLines(wFile)
-	printG("New Count   : " + locale.format("%d", int(workingSize), grouping=True))
+	printG("New Count   : " + locale.format_string("%d", int(workingSize), grouping=True))
 	
 	loggER("")
-	loggER(time.strftime("%m/%d/%Y %H:%M:%S", time.gmtime()) + ": " + locale.format("%d", int(workingSize), grouping=True) + " hash(es) to crack")
+	loggER(time.strftime("%m/%d/%Y %H:%M:%S", time.gmtime()) + ": " + locale.format_string("%d", int(workingSize), grouping=True) + " hash(es) to crack")
 	loggER("****************************************************")
 	loggER("")
 
@@ -438,7 +463,7 @@ def main():
 if __name__ == "__main__":
 	
 	if sys.version_info <= (3, 0):
-		sys.stdout.write("This script requires Python 3.x\n")
+		logOUT.screen("[!] This script requires Python 3.x", "red")
 		sys.exit(1)
 
 	banner.banner()
@@ -446,7 +471,9 @@ if __name__ == "__main__":
 
 	# Root Check
 	if os.geteuid() != 0:
-		exit("You need to have root privileges to run this script.\nPlease try again, this time using 'sudo'. Exiting.")
+		logOUT.screen("[!] You need to have root privileges to run this script.", "red")
+		logOUT.screen("[!] Please try again, this time using 'sudo'. Exiting.")
+		sys.exit(1)
 
 	parser = ArgumentParser()
 	# Tool options
@@ -455,6 +482,7 @@ if __name__ == "__main__":
 	parser.add_argument("--addOn",	 	 dest="addOn",	help="Add on Hashcat options", 		metavar="\"--remove -w 4\"")
 	parser.add_argument("-p", "--pFile", dest="pFile",	help="Alternate potfile", 			metavar="pot.file")
 	parser.add_argument("--dbcheck",	 dest="hash",	help="Check DB for cracked hash", 	metavar="'5f4dcc3b5aa765d61d8327deb882cf99' or './hash.file'", )
+	parser.add_argument("--notify","--Notify",			dest="notify",		action="store_true", 	help="Use VLC to notfy were done ...")
 
 	#  - [ Attack Modes ] -
 	#  0 | Straight
@@ -464,7 +492,7 @@ if __name__ == "__main__":
 	#  7 | Hybrid Mask + Wordlist
 
 	parser.add_argument("--rules","--Rules",			dest="rules",		action="store_true", 	help="One Rule to Rule them all")
-	parser.add_argument("--wordlist","--Wordlist",		dest="wordlist", 	action="store_true", 	help="Wordlist Only")
+	parser.add_argument("--wordlist","--Wordlist",		dest="wordlist", 	default=99999,	action="store", 	nargs='?',	type=int, help="Wordlist Only")
 	parser.add_argument("--rulesPlus","--RulesPlus",	dest="rulesplus",	action="store_true", 	help="Extended Rules")
 	parser.add_argument("--brute","--Brute", 		 	dest="brute",		help="Ex: 2,3 - Brute Loop '?a?a' [2] to '?a?a?a' [3] Ex: +,3 incrementing '?a' to '?a?a?a' [3]", metavar='[+|any number],[any number]')
 	parser.add_argument("--mask","--Mask", 		 		dest="mask",		action="store_true", 	help="Mask Attack ex: '?a?a?a?a?a?a?a'")
@@ -511,7 +539,7 @@ if __name__ == "__main__":
 		if os.path.isfile(args.hFile):
 			hFile = args.hFile
 		else:
-			printR("File Not Found: " + args.hFile)
+			logOUT.screen("[!] File Not Found", "red", args.hFile)
 			exit()
 		
 		# create a unique identifier date + master
@@ -539,7 +567,7 @@ if __name__ == "__main__":
 			exit()
 
 		# Validate the lower limit.
-		if lowER is "+":
+		if lowER == "+":
 			# we dont need to verify ... we will increment
 			print("increment")
 		

@@ -27,7 +27,7 @@ from datetime import datetime
 import locale
 locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
 
-from helper import *
+from util.helper import *
 
 def db_init(DBFILE):
 	conn = sqlite3.connect(DBFILE)
