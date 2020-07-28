@@ -396,7 +396,7 @@ def main():
 		loopList(hybridDir, workingSize, "Hybrid")
 		dbWork.endT(startTime)
 
-	def hybridonly():
+	def hybrid():
 		workCheck(c,initialSize)
 		logOUT.screen("[+] Hybrid Mask" , "yellow"  , hybridDir, "cyan")
 		loopList(hybridDir, workingSize, "Mask")
@@ -408,15 +408,18 @@ def main():
 
 		if lowER == '+':
 			#we need to incrementing
-			charset = '?a' * uppER
+			charset = '?a' * int(uppER)
 			charset = '--increment ' + charset
 			hashCAT(hType,wFile,charset,"Brute")
 		else:
+			uppER = int(uppER)
+			lowER = int(lowER)
 			for b in range(lowER, uppER + 1):
 				charset = '?a' * b
+				hashCAT(hType,wFile,charset,"Brute")
 
 	def all():
-		logOUT.screen("Running All : wordList, Rules, RulesPlus, Mask, Hybrid, Brute[5,9]")
+		logOUT.screen("[+] Running ALL checks","","wordList, Rules, RulesPlus, Mask, Hybrid, Brute[5,9]")
 		wordlist()
 		rules()
 		rulesplus()
@@ -456,10 +459,23 @@ def main():
 		check = str(arguments).lower()
 		check = check[2:]
 
+		# Skip Notify until the end
+		if check == 'notify':
+			continue
+
+		# If this is a argument, run function
 		if check in vars(args):
 			fU = locals()[check]
-			fU()
-		
+			if check == 'brute':
+				a,b = args.brute.split(',',1)
+				fU(a,b)
+			else:
+				fU()
+
+	# Notify if needed
+	if args.notify:
+		notify()
+
 	# If we got here we couldnt crack everything and ran out of things to try ....
 	logOUT.screen("")
 	logOUT.screen("[!] We ran out of work ...", "red"  , "\u001b[31m\u001b[31;1m\U0001F634\033[00m", "cyan")
@@ -502,7 +518,7 @@ if __name__ == "__main__":
 	parser.add_argument("--rulesPlus","--RulesPlus",	dest="rulesplus",	action="store_true", 	help="Extended Rules")
 	parser.add_argument("--brute","--Brute", 		 	dest="brute",		help="Ex: 2,3 - Brute Loop '?a?a' [2] to '?a?a?a' [3] Ex: +,3 incrementing '?a' to '?a?a?a' [3]", metavar='[+|any number],[any number]')
 	parser.add_argument("--mask","--Mask", 		 		dest="mask",		action="store_true", 	help="Mask Attack ex: '?a?a?a?a?a?a?a'")
-	parser.add_argument("--hybrid","--Hybrid",			dest="hybridonly", 	action="store_true", 	help="Hybrid Attack")
+	parser.add_argument("--hybrid","--Hybrid",			dest="hybrid",	 	action="store_true", 	help="Hybrid Attack")
 	parser.add_argument("--All","--all",				dest="all", 		action="store_true", 	help="All Attacks")
 
 	args = parser.parse_args()
