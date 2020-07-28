@@ -32,7 +32,6 @@ locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
 import util.dbWork as dbWork
 import util.config as config
 import util.banner as banner
-from util.helper import *
 import util.loggER as logOUT
 
 # Configurations #
