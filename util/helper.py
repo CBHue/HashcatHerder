@@ -10,14 +10,6 @@ import logging
 
 '''
 
-def printB(out): print("\033[90m{}\033[00m" .format("[-] " + out))
-def printR(out): print("\033[91m{}\033[00m" .format("[!] " + out)) 
-def printG(out): print("\033[92m{}\033[00m" .format("[+] " + out)) 
-def printY(out): print("\033[93m{}\033[00m" .format("[~] " + out)) 
-def printB(out): print("\033[94m{}\033[00m" .format("[-] " + out))  
-def printP(out): print("\033[95m{}\033[00m" .format("[-] " + out))  
-def printC(out): print("\033[96m{}\033[00m" .format("[-] " + out))
-def printW(out): print("[$] " + out)
 
 def loggER(out,*lvl):
 	logging.basicConfig(level=logging.DEBUG, format='[ \033[95m%(asctime)s\033[00m ] - %(levelname)s - %(message)s')

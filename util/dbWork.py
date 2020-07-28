@@ -27,7 +27,6 @@ from datetime import datetime
 import locale
 locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
 
-from util.helper import *
 import util.loggER as logOUT
 
 def db_init(DBFILE):
@@ -50,7 +49,7 @@ def db_connect(DBFILE):
 		return conn
 
 	except Exception:
-		printR("Could not connect to database")
+		logOUT.printR("Could not connect to database")
 		raise SystemExit
 
 def db_close(conn):
@@ -69,7 +68,7 @@ def db_search(c, hash):
 		return hash
 
 def db_getHashCount(conn):
-	printP("Checking DB for Hash count")
+	logOUT.printP("Checking DB for Hash count")
 	conn.execute('pragma journal_mode=wal')
 	c = conn.cursor()
 	#c.execute('SELECT count(*) from hashes')
@@ -80,7 +79,7 @@ def db_getHashCount(conn):
 
 def db_checkFile(c, hashFile, workingFile, LogFile):
 	if hashFile:
-		printP("Checking if Hashes are in DB")
+		logOUT.printP("Checking if Hashes are in DB")
 		with open(workingFile, mode = 'a', encoding='utf-8') as wFile:
 			with open(LogFile, mode = 'a', encoding='utf-8') as oFile:
 				oFile.write("Hashes in DB\n")
@@ -101,11 +100,11 @@ def db_checkFile(c, hashFile, workingFile, LogFile):
 		wFile.close()
 		oFile.close()
 	else:
-		printR("Issues with the hashFile ...")		
+		logOUT.printR("Issues with the hashFile ...")		
 
 def db_readFile(conn, fileName):
 	if fileName:
-		printP("Adding potFile to DB: " + fileName)
+		logOUT.printP("Adding potFile to DB: " + fileName)
 		try:
 			c = conn.cursor()
 			c.execute("BEGIN")
@@ -116,9 +115,9 @@ def db_readFile(conn, fileName):
 			conn.commit()
 
 		except IOError:
-			printR("Could not read file:"), fileName
+			logOUT.printR("Could not read file:"), fileName
 	else:
-		printR("Issues with " + fileName + " ...")
+		logOUT.printR("Issues with " + fileName + " ...")
 
 def db_configure(dataDIR):
 	try: 
@@ -129,9 +128,9 @@ def db_configure(dataDIR):
 
 def start():
 	t = datetime.now()
-	printP("Starting Time " + str(t))
+	logOUT.printP("Starting Time " + str(t))
 	return t
 
 def endT(t):
 	tE = datetime.now() - t 
-	printP('Elapsed Time (hh:mm:ss.ms) {}'.format(tE))
+	logOUT.printP('Elapsed Time (hh:mm:ss.ms) {}'.format(tE))
